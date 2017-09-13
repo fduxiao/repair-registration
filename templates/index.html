@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}PCS{% endblock %}
+
+{% block content %}
+
+
+<div class="container">
+    <div class="row">
+        <h1 class="pull-left col-md-6">欢迎来到PCS</h1>
+        <h1 class="pull-right col-md-6">Welcome to PCS!</h1>
+    </div>
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active"><a href="#info_form" aria-controls="info_form" role="tab" data-toggle="tab">New</a></li>
+        <li role="presentation"><a href="#stunum" aria-controls="stunum" role="tab" data-toggle="tab">Stu.No.</a></li>
+    </ul>
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="info_form">
+            <form id="info">
+                <div class="form-group">
+                    <label for="name">姓名</label>
+                    <input name="name" type="text" class="form-control" id="name" placeholder="Name">
+                </div>
+
+                <div class="form-group">
+                    <label for="uid">学号</label>
+                    <input name="uid" type="text" class="form-control" id="uid" placeholder="Stu.No.">
+                </div>
+
+                <div class="form-group">
+                    <label for="desc">问题描述</label>
+                    <input name="desc" type="text" class="form-control" id="desc" placeholder="Description">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">手机</label>
+                    <input name="phone" type="text" class="form-control" id="phone" placeholder="Phone">
+                </div>
+
+                <div class="text-center">
+                    <button type="button" class="btn btn-primary" id="new">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="stunum">
+            <form>
+                <div class="form-group">
+                    <label for="uid">学号</label>
+                    <input name="uid" type="text" class="form-control" id="old_uid" placeholder="Stu.No.">
+                </div>
+
+                <div class="text-center">
+                    <button type="button" class="btn btn-primary" id="old">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $("#old").click(function () {
+        var uid = $("#old_uid").val();
+        var url = '{{ url_for("find", uid="") }}'+uid;
+        $.post(url, '', function (result) {
+            console.log(result);
+            localStorage.setItem('client', result);
+            location.href = "{{ url_for('pendings4client') }}";
+        });
+    });
+
+    $("#new").click(function () {
+        var d = $("#info").serializeArray();
+        var o = {};
+        d.forEach(function (x) {
+            o[x.name] = x.value;
+        });
+        $.ajax({
+            url: '{{ url_for("new") }}', // url where to submit the request
+            type : "POST", // type of action POST || GET
+            contentType : 'application/json', // data type
+            data : JSON.stringify(o), // post data || get data
+            success : function(result) {
+                // you can see the result from the console
+                // tab of the developer tools
+                localStorage.setItem('client', result);
+                location.href = "{{ url_for('pendings4client') }}";
+            },
+            error: function(xhr, resp, text) {
+                console.log(xhr, resp, text);
+            }
+        });
+    });
+</script>
+{% endblock %}

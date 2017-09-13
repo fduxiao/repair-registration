@@ -1,0 +1,8 @@
+# Jetbrains
+.idea/
+
+# databases
+dbs/
+
+# python cache
+__pycache__/

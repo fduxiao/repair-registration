@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Pendings{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <td>Description</td>
+                <td>Active</td>
+                <td>Updated At</td>
+                <td>Operations</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pendings %}
+            <tr>
+                <td>{{ p['desc'] }}</td>
+                <td>{{ p['active'] }}</td>
+                <td>{{ p['updated_at'] }}</td>
+                <td>
+                    <a href="javascript:deactivate('{{loop.index-1}}')">Deactivate</a>
+                    <br/>
+                    <br/>
+                    <a href="javascript:reactivate('{{loop.index-1}}')">Reactivate</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deactivate(pos) {
+    var url = "{{ url_for('deactivate', pos=0) }}"+pos;
+    console.log(url);
+    $.post(url, '', function () {
+        location.reload();
+    })
+}
+
+function reactivate(pos) {
+    var url = "{{ url_for('reactivate', pos=0) }}"+pos;
+    console.log(url);
+    $.post(url, '', function () {
+        location.reload();
+    })
+}
+</script>
+{% endblock %}
