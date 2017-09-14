@@ -125,4 +125,5 @@ def admin_deactivate():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.secret_key = "123456"
+    app.run(debug=True, host="0.0.0.0")
