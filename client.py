@@ -77,13 +77,23 @@ def get_client(url='localhost', db_name='pcs', coll_name=None):
             self.pendings[pos]['updated_at'] = datetime.datetime.now()
             self.coll.find_one_and_update({'_id': ObjectId(self.id)}, {"$set": {"pendings": self.pendings}})
 
+        def add_pendings(self, desc, active=False):
+            new_pending = {
+                'desc': desc,
+                'created_at': datetime.datetime.now(),
+                'updated_at': datetime.datetime.now(),
+                'active': active,
+            }
+            self.pendings.append(new_pending)
+            self.coll.find_one_and_update({'_id': ObjectId(self.id)}, {"$set": {"pendings": self.pendings}})
+
         @classmethod
-        def get_works(cls):
+        def get_active_pendings(cls):
             pipeline = [
                 {'$match': {'finished': False}},
-                {'$unwind': "$pendings"},
+                {'$unwind': {"path": "$pendings", 'includeArrayIndex': 'pos'}},
                 {'$match': {'pendings.active': True}},
-                {'$sort': {'pendings.updated_at': -1}},
+                {'$sort': {'pendings.updated_at': 1}},
             ]
             l = []
             for d in cls.coll.aggregate(pipeline):

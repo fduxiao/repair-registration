@@ -1,4 +1,30 @@
 {% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<style>
+
+    thead, tbody, tr, td, th {
+        display: block;
+    }
+
+    table {
+        overflow: auto;
+    }
+
+    tr:after {
+        content: ' ';
+        display: block;
+        visibility: hidden;
+        clear: both;
+    }
+
+    tbody td, thead th {
+        width: 25%;
+        float: left;
+    }
+
+</style>
+{% endblock %}
 {% block title %}Pendings{% endblock %}
 
 {% block content %}
@@ -6,48 +32,85 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <td>Description</td>
-                <td>Active</td>
-                <td>Updated At</td>
-                <td>Operations</td>
+                <th>Description</th>
+                <th>Active</th>
+                <th>Updated At</th>
+                <th>Operations</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="pre-scrollable">
             {% for p in pendings %}
             <tr>
                 <td>{{ p['desc'] }}</td>
                 <td>{{ p['active'] }}</td>
-                <td>{{ p['updated_at'] }}</td>
+                <td>{{ p['updated_at'].strftime('%Y-%m-%d %H:%M:%S') }}</td>
                 <td>
                     <a href="javascript:deactivate('{{loop.index-1}}')">Deactivate</a>
-                    <br/>
-                    <br/>
+                    |
                     <a href="javascript:reactivate('{{loop.index-1}}')">Reactivate</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
 
+<div class="container-fluid">
+    <form>
+        <div class="form-group">
+            <div class="form-group">
+                <label for="desc">问题描述</label>
+                <textarea name="desc" placeholder="Description" id="desc" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" id="active" value="">
+                Active
+            </label>
+        </div>
+
+
+        <div class="text-center">
+            <button type="button" class="btn btn-primary" id="add" onclick="add_pending()">Submit</button>
+        </div>
+    </form>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 function deactivate(pos) {
-    var url = "{{ url_for('deactivate', pos=0) }}"+pos;
-    console.log(url);
+    var url = "{{ url_for('client_deactivate', pos=0) }}"+pos;
     $.post(url, '', function () {
         location.reload();
     })
 }
 
 function reactivate(pos) {
-    var url = "{{ url_for('reactivate', pos=0) }}"+pos;
-    console.log(url);
+    var url = "{{ url_for('client_reactivate', pos=0) }}"+pos;
     $.post(url, '', function () {
         location.reload();
     })
+}
+
+function add_pending() {
+    var desc = $("#desc").val();
+    var active = $("#active").is(':checked');
+
+    var url = "{{ url_for('client_pendings_add') }}";
+    var data = {desc: desc, active: active};
+    console.log(data);
+    $.ajax({
+        url: url,
+        method: 'POST',
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        success: function(){
+            location.reload();
+        }
+    });
 }
 </script>
 {% endblock %}

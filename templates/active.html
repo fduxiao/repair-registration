@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Active{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <td>Id</td>
+                <td>Pos</td>
+                <td>Name</td>
+                <td>Time</td>
+                <td>Desc</td>
+                <td>Operation</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in pendings %}
+            <tr>
+                <td>{{ p['_id'] }}</td>
+                <td>{{ p['pos'] }}</td>
+                <td>{{ p['name'] }}</td>
+                <td>{{ p['pendings']['updated_at'] }}</td>
+                <td>{{ p['pendings']['desc'] }}</td>
+                <td>
+                    <a href="javascript:deactivate('{{ p._id }}', '{{ p.pos }}')">Deactivate</a>
+                    |
+                    <a href="javascript:reactivate('{{ p._id }}', '{{ p.pos }}')">Reactivate</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+setTimeout(function () {
+    location.reload()
+}, 60000);
+
+function deactivate(id, pos) {
+    pos = parseInt(pos);
+    var url = "{{ url_for('admin_deactivate') }}";
+    var data = {id: id, pos: pos};
+    $.ajax({
+        url: url,
+        method: 'POST',
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        success: function(){
+            location.reload();
+        }
+    });
+}
+
+function reactivate(id, pos) {
+    pos = parseInt(pos);
+    var url = "{{ url_for('admin_reactivate') }}";
+    var data = {id: id, pos: pos};
+
+    $.ajax({
+        url: url,
+        method: 'POST',
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        success: function(){
+            location.reload();
+        }
+    });
+}
+
+</script>
+{% endblock %}
