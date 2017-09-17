@@ -3,6 +3,7 @@ from flask import *
 from client import *
 from uuid import uuid4
 from functools import wraps
+import os
 
 Client = get_client('localhost')
 
@@ -125,5 +126,9 @@ def admin_deactivate():
 
 
 if __name__ == '__main__':
-    app.secret_key = "123456"
-    app.run(debug=True, host="0.0.0.0")
+    env = os.environ.get('FLASK_ENV', 'DEBUG')
+    if env == 'DEBUG':
+        app.secret_key = "123456"
+        app.run(debug=True, host="0.0.0.0")
+    else:
+        app.run(host="0.0.0.0", port='80')

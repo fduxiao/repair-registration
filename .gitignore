@@ -6,3 +6,6 @@ dbs/
 
 # python cache
 __pycache__/
+
+# docker image
+*.tar
