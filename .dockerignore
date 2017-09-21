@@ -1,0 +1,14 @@
+# Jetbrains
+.idea/
+
+# databases
+dbs/
+
+# python cache
+__pycache__/
+
+# docker image
+*.tar
+
+# git
+.git/

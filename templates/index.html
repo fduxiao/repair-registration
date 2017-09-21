@@ -11,8 +11,8 @@
     </div>
 
     <ul class="nav nav-tabs" role="tablist">
-        <li role="presentation" class="active"><a href="#info_form" aria-controls="info_form" role="tab" data-toggle="tab">New</a></li>
-        <li role="presentation"><a href="#stunum" aria-controls="stunum" role="tab" data-toggle="tab">Stu.No.</a></li>
+        <li role="presentation" class="active"><a href="#info_form" aria-controls="info_form" role="tab" data-toggle="tab">登记(Registration)</a></li>
+        <li role="presentation"><a href="#stunum" aria-controls="stunum" role="tab" data-toggle="tab">根据学号查找(find by Stu.No.)</a></li>
     </ul>
     <div class="tab-content">
         <div role="tabpanel" class="tab-pane active" id="info_form">
@@ -65,8 +65,11 @@
     $("#old").click(function () {
         var uid = $("#old_uid").val();
         var url = '{{ url_for("find", uid="") }}'+uid;
-        $.post(url, '', function (result) {
-            console.log(result);
+        $.get(url, function (result) {
+            if(result === null) {
+                alert('无之前记录(Wrong Student Number!)');
+                return;
+            }
             localStorage.setItem('client', result);
             location.href = "{{ url_for('pendings4client') }}";
         });

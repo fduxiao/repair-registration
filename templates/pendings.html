@@ -25,17 +25,21 @@
 
 </style>
 {% endblock %}
-{% block title %}Pendings{% endblock %}
+{% block title %}等待任务 Pendings{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
+    <h2>你好 {{client.name}}</h2>
+    <h4>学号(Stu. Num.) {{client.uid}}</h4>
+    <h4>联系方式(Contact) {{client.phone}}</h4>
+    <hr/>
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Description</th>
-                <th>Active</th>
-                <th>Updated At</th>
-                <th>Operations</th>
+                <th>问题描述Description</th>
+                <th>等待处理Active</th>
+                <th>更新时间Updated At</th>
+                <th>操作Operations</th>
             </tr>
         </thead>
         <tbody class="pre-scrollable">
@@ -45,17 +49,20 @@
                 <td>{{ p['active'] }}</td>
                 <td>{{ p['updated_at'].strftime('%Y-%m-%d %H:%M:%S') }}</td>
                 <td>
-                    <a href="javascript:deactivate('{{loop.index-1}}')">Deactivate</a>
-                    |
-                    <a href="javascript:reactivate('{{loop.index-1}}')">Reactivate</a>
+                    {% if p['active'] %}
+                    <a href="javascript:deactivate('{{p.pos}}')">完成Deactivate</a>
+                    {% else %}
+                    <a href="javascript:reactivate('{{p.pos}}')">继续等待Reactivate</a>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-
 <div class="container-fluid">
+    <h3>添加新的等待任务</h3>
+    <hr />
     <form>
         <div class="form-group">
             <div class="form-group">
@@ -66,14 +73,14 @@
 
         <div class="checkbox">
             <label>
-                <input type="checkbox" id="active" value="">
-                Active
+                <input type="checkbox" id="active" checked>
+                需要等待 Active
             </label>
         </div>
 
 
         <div class="text-center">
-            <button type="button" class="btn btn-primary" id="add" onclick="add_pending()">Submit</button>
+            <button type="button" class="btn btn-primary" id="add" onclick="add_pending()">添加Add</button>
         </div>
     </form>
 </div>

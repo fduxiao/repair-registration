@@ -30,25 +30,50 @@ def get_client(url='localhost', db_name='pcs', coll_name=None):
             self.uid = uid
             self.desc = desc
             self.phone = phone
+            for i, p in enumerate(pendings):
+                p['pos'] = i
+            pendings.sort(key=lambda x: (x['active'], x['updated_at']), reverse=True)
             self.pendings = pendings
             self.id = str(_id)
 
         @classmethod
         def new(cls, name, uid, desc, phone):
+            c = cls.get_from_uid(uid)
+            if c is not None:
+                c.desc = desc
+                c.pendings.append({
+                    'desc': desc,
+                    'created_at': datetime.datetime.now(),
+                    'updated_at': datetime.datetime.now(),
+                    'active': True,
+                })
+                cls.coll.find_one_and_update({'_id': ObjectId(c.id)}, {
+                    "$set": {
+                        "desc": desc,
+                        "pendings": c.pendings,
+                    },
+                })
+                if phone not in c.phone and phone != "":
+                    c.phone.append(phone)
+                    cls.coll.find_one_and_update({'_id': ObjectId(c.id)}, {
+                        "$push": {
+                            "phone": phone,
+                        },
+                    })
+                return c
             d = {
                 'name': name,
                 'uid': uid,
                 'desc': desc,
-                'phone': phone,
+                'phone': [phone],
                 'pendings': [
                     {
-                        'desc': 'start',
+                        'desc': desc,
                         'created_at': datetime.datetime.now(),
                         'updated_at': datetime.datetime.now(),
                         'active': True,
                     }
                 ],
-                'finished': False,
                 'time': datetime.datetime.now(),
             }
             cls.coll.insert_one(d)
@@ -57,7 +82,10 @@ def get_client(url='localhost', db_name='pcs', coll_name=None):
 
         @classmethod
         def get_from_uid(cls, uid):
-            one = cls.coll.find_one({'uid': uid})
+            one = cls.coll.find({'uid': uid}).sort([('time', pymongo.DESCENDING)]).limit(1)
+            if one.count() == 0:
+                return None
+            one = one[0]
             c = Client(one['name'], one['uid'], one['desc'], one['phone'], one['pendings'], one['_id'])
             return c
 
@@ -70,12 +98,22 @@ def get_client(url='localhost', db_name='pcs', coll_name=None):
         def deactivate(self, pos):
             self.pendings[pos]['active'] = False
             self.pendings[pos]['updated_at'] = datetime.datetime.now()
-            self.coll.find_one_and_update({'_id': ObjectId(self.id)}, {"$set": {"pendings": self.pendings}})
+            self.coll.find_one_and_update({'_id': ObjectId(self.id)}, {
+                "$set": {
+                    "pendings."+str(pos)+".active": False,
+                    "pendings."+str(pos)+".updated_at": self.pendings[pos]['updated_at'],
+                }
+            })
 
         def reactivate(self, pos):
             self.pendings[pos]['active'] = True
             self.pendings[pos]['updated_at'] = datetime.datetime.now()
-            self.coll.find_one_and_update({'_id': ObjectId(self.id)}, {"$set": {"pendings": self.pendings}})
+            self.coll.find_one_and_update({'_id': ObjectId(self.id)}, {
+                "$set": {
+                    "pendings." + str(pos) + ".active": True,
+                    "pendings." + str(pos) + ".updated_at": self.pendings[pos]['updated_at'],
+                }
+            })
 
         def add_pendings(self, desc, active=False):
             new_pending = {
@@ -85,15 +123,22 @@ def get_client(url='localhost', db_name='pcs', coll_name=None):
                 'active': active,
             }
             self.pendings.append(new_pending)
-            self.coll.find_one_and_update({'_id': ObjectId(self.id)}, {"$set": {"pendings": self.pendings}})
+            self.coll.find_one_and_update({'_id': ObjectId(self.id)}, {
+                "$push": {"pendings": new_pending}
+            })
 
         @classmethod
         def get_active_pendings(cls):
+            # now = datetime.datetime.now()
+            # one_day = datetime.timedelta(1)
+            # start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            # stop = start + one_day
+
             pipeline = [
-                {'$match': {'finished': False}},
                 {'$unwind': {"path": "$pendings", 'includeArrayIndex': 'pos'}},
                 {'$match': {'pendings.active': True}},
-                {'$sort': {'pendings.updated_at': 1}},
+                # {'$match': {"pendings.created_at": {"$gte": start, "$lt": stop}}},
+                {'$sort': {'pendings.updated_at': pymongo.ASCENDING}},
             ]
             l = []
             for d in cls.coll.aggregate(pipeline):

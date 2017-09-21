@@ -1,9 +1,8 @@
 FROM base/archlinux
-RUN pacman -Syu --noconfirm python mongodb python-pip
+RUN pacman -Syu --noconfirm python python-pip
 RUN pip install pymongo flask
 EXPOSE 80
-EXPOSE 27017
-ENV FLASK_ENV PRODUCT
+ENV FLASK_ENV PCS
 # set working directory
 WORKDIR /app
 ADD . /app

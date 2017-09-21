@@ -5,7 +5,11 @@ from uuid import uuid4
 from functools import wraps
 import os
 
-Client = get_client('localhost')
+env = os.environ.get('FLASK_ENV', 'DEBUG')
+mongo_host = "localhost"
+if env == 'PCS':
+    mongo_host = 'mongo.fdupcs.org'
+Client = get_client(mongo_host, coll_name='repair-registration')
 
 app = Flask(__name__)
 app.secret_key = str(uuid4())
@@ -37,6 +41,8 @@ def new():
 @app.route('/find/<uid>', methods=['POST', 'GET'])
 def find(uid):
     client = Client.get_from_uid(uid)
+    if client is None:
+        return jsonify(None)
     session['id'] = client.id
     return jsonify(client.__dict__)
 
@@ -50,13 +56,13 @@ def get_the_client():
     return client
 
 
-@app.route('/pendings/client')
+@app.route('/client/pendings')
 def pendings4client():
     client = get_the_client()
     pendings = client.pendings
     if request.is_json:
         return jsonify(pendings)
-    return render_template("pendings.html", pendings=pendings)
+    return render_template("pendings.html", pendings=pendings, client=client)
 
 
 @app.route('/client/pendings/add', methods=['POST'])
@@ -126,7 +132,6 @@ def admin_deactivate():
 
 
 if __name__ == '__main__':
-    env = os.environ.get('FLASK_ENV', 'DEBUG')
     if env == 'DEBUG':
         app.secret_key = "123456"
         app.run(debug=True, host="0.0.0.0")
