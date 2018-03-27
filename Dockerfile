@@ -1,5 +1,4 @@
-FROM base/archlinux
-RUN pacman -Syu --noconfirm python python-pip
+FROM python:alpine
 RUN pip install pymongo flask
 EXPOSE 80
 ENV FLASK_ENV PCS
