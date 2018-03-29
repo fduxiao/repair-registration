@@ -136,4 +136,5 @@ if __name__ == '__main__':
         app.secret_key = "123456"
         app.run(debug=True, host="0.0.0.0")
     else:
+        os.system("cp /app/static/* /static")
         app.run(host="0.0.0.0", port=80)

@@ -9,3 +9,5 @@ __pycache__/
 
 # docker image
 *.tar
+# docker temp
+.docker_temp*
